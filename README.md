@@ -3,6 +3,10 @@ Trello Card Lister
 
 Node.js script to parse the Names of Cards on a Board. Kept super slim - no API auth keys required.
 
+The design is based around the idea of text based streams. It utilizes the wonderful (albeit all-in-one)
+event-stream library.
+
+
 Instructions
 ==============
 
