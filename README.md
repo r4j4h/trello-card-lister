@@ -6,7 +6,7 @@ Node.js script to parse the Names of Cards on a Board. Kept super slim - no API 
 Instructions
 ==============
 
-1. __Go to__ your desired __Trello board__
+1. __Browse to__ your desired __Trello board__ in your favorite browser
 2. Add `.json` to the end of the __URL__
 3. __Copy__ or __Save__ the JSON into or over `input.json`
 4. Run the script (`node lister.js`)
