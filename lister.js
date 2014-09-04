@@ -8,24 +8,50 @@ var es = require('event-stream'),
 
 // Define stream handlers
 
+/**
+ * Tease out card names from a Trello Board JSON Blob
+ * @returns {*}
+ */
 var cardNameParserFactory = function() {
     return JSONStreamParserFactory('cards.*.name');
 };
+
+/**
+ * Tease out card descriptions from a Trello Board JSON Blob
+ * @returns {*}
+ */
 var cardDescriptionParserFactory = function() {
     return JSONStreamParserFactory('cards.*.desc');
 };
+
+/**
+ * Tease out card short urls from a Trello Board JSON Blob
+ * @returns {*}
+ */
 var cardShortUrlParserFactory = function() {
     return JSONStreamParserFactory('cards.*.shortUrl');
 };
 
+/**
+ * Tease out JSON blobs from a JSON Blob using JSONStream.parse
+ * @returns {*}
+ */
 var JSONStreamParserFactory = function(parseTarget) {
     return JSONStream.parse(parseTarget);
 };
 
+/**
+ * Collect several text stream emissions and wrap them in quotes and newlines, handling newlines inside them.
+ * @returns {stringify|*}
+ */
 var stringifyStreamSerializerFactory = function() {
     return es.stringify();
 };
 
+/**
+ * Strip the quotes from the output of es.stringify() and stringifyStreamSerializerFactory()
+ * @returns {map|*}
+ */
 var quotesStripperFactory = function() { return es.map(function(data, cb) {
     // This guy is useful in combination with stringify to let newlines within titles stay stringified
     var newlineStrippedData = data.replace(/(\r\n|\n|\r)/gm,"");
@@ -34,13 +60,24 @@ var quotesStripperFactory = function() { return es.map(function(data, cb) {
     cb(null, reNewLinedDatadata);
 })};
 
+/**
+ * Print every stream emission to the console.
+ * @returns {map|*}
+ */
 var consoleObjectPrinterFactory = function() { return es.map(function (data, cb) {
     console.log(data);
     cb(null, data);
 })};
 
 
-// Remote Trello board download function
+/**
+ * Download a Trello Board JSON Blob from a given url
+ *
+ * Note: Requires authentication. Not implemented yet.
+ *
+ * @param {String} boardUrl
+ * @param {Function} cb
+ */
 var downloadTrelloBoard = function(boardUrl, cb) {
     request('https://trello.com/b/aKseBapy/conversion-to-versionone.json', function (error, response, body) {
         console.log(response.statusCode);
@@ -53,7 +90,6 @@ var downloadTrelloBoard = function(boardUrl, cb) {
         }
     });
 };
-
 
 console.log('Opening files for reading and writing...');
 
@@ -87,6 +123,13 @@ inputStream.on('error', function(err) {
     throw err;
 });
 
+/**
+ * Convert a Trello Board JSON object into a newline delimited text stream of names, descriptions, or urls.
+ *
+ * @param {pipe} inputStream A text stream that emits a Trello Board JSON object
+ * @param {Function} boardParser A text stream enabled function. Defaults to cardNameParserFactory()'s returned value.
+ * @returns {pipe} A text stream that emits a newline delimited text stream
+ */
 function doTrelloBoardParseTopology( inputStream, boardParser ) {
     var outputStream;
     var boardParser = boardParser || cardNameParserFactory();
