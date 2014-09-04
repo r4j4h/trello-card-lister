@@ -79,7 +79,7 @@ var consoleObjectPrinterFactory = function() { return es.map(function (data, cb)
  * @param {Function} cb
  */
 var downloadTrelloBoard = function(boardUrl, cb) {
-    request('https://trello.com/b/aKseBapy/conversion-to-versionone.json', function (error, response, body) {
+    request(boardUrl, function (error, response, body) {
         console.log(response.statusCode);
         if (!error && response.statusCode == 200) {
             // Success
