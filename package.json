@@ -1,0 +1,17 @@
+{
+  "name": "trello-card-parser",
+  "version": "0.0.1",
+  "description": "Parser so we can get backlog out of Trello",
+  "main": "lister.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Jasmine",
+  "license": "ISC",
+  "dependencies": {
+    "event-stream": "^3.1.5",
+    "JSONStream": "^0.8.4",
+    "async": "^0.9.0",
+    "request": "^2.41.0"
+  }
+}
