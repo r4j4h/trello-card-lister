@@ -8,7 +8,17 @@ var es = require('event-stream'),
 
 // Define stream handlers
 
-var cardNameParserFactory = function(parseTarget) {
+var cardNameParserFactory = function() {
+    return JSONStreamParserFactory('cards.*.name');
+};
+var cardDescriptionParserFactory = function() {
+    return JSONStreamParserFactory('cards.*.desc');
+};
+var cardShortUrlParserFactory = function() {
+    return JSONStreamParserFactory('cards.*.shortUrl');
+};
+
+var JSONStreamParserFactory = function(parseTarget) {
     return JSONStream.parse(parseTarget);
 };
 
@@ -60,6 +70,15 @@ combinedOutputStream.on('finish', function() {
 combinedOutputStream.on('close', function() {
     console.log('Finished saving files, all done!');
 });
+var namesOutputStream = fs.createWriteStream('output-names.json', {
+    encoding: 'utf8'
+});
+var descriptionOutputStream = fs.createWriteStream('output-descriptions.json', {
+    encoding: 'utf8'
+});
+var shortUrlsOutputStream = fs.createWriteStream('output-shortUrls.json', {
+    encoding: 'utf8'
+});
 // Prepare input files
 var inputStream = fs.createReadStream('input.json', {
     encoding: 'utf8'
@@ -68,11 +87,37 @@ inputStream.on('error', function(err) {
     throw err;
 });
 
+function doTrelloBoardParseTopology( inputStream, boardParser ) {
+    var outputStream;
+    var boardParser = boardParser || cardNameParserFactory();
+
+    // "Topology"
+    var streamFlow;
+    streamFlow = inputStream.pipe( boardParser );
+    streamFlow.on('error', function(err) {
+        cb('JSON trello card parser error: ' + err);
+    });
+    streamFlow = streamFlow.pipe( stringifyStreamSerializerFactory() );
+    streamFlow.on('error', function(err) {
+        cb('string serializer error: ' + err);
+    });
+    streamFlow = streamFlow.pipe( quotesStripperFactory() );
+    streamFlow.on('error', function(err) {
+        cb('quote stripper error: ' + err);
+    });
+
+    return streamFlow;
+}
+
+var cardNamesStream = doTrelloBoardParseTopology( inputStream, cardNameParserFactory() );
+cardNamesStream.pipe(namesOutputStream);
+var cardShortUrlsStream = doTrelloBoardParseTopology( inputStream, cardShortUrlParserFactory() );
+cardShortUrlsStream.pipe(shortUrlsOutputStream);
 
 
 // "Topology"
 var streamFlow;
-streamFlow = inputStream.pipe( cardNameParserFactory( 'cards.*.name' ) );
+streamFlow = inputStream.pipe( cardNameParserFactory() );
 streamFlow.on('error', function(err) {
     cb('JSON trello card parser error: ' + err);
 });
